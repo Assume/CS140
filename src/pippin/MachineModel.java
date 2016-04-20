@@ -306,10 +306,16 @@ public class MachineModel {
 		try{
 			int op_part = code.getOpPart(cpu.pc);
 			int arg = code.getArg(cpu.pc);
+			//System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
 			Instruction.checkParity(op_part);
+			//System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
 			INSTRUCTIONS[op_part/8].execute(arg, op_part%8);
+			//System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
+			
 		}catch(Exception e){
-			halt();
+//		halt();
+//			System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
+			
 			throw e;
 		}
 	}

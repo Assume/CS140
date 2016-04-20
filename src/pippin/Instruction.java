@@ -15,7 +15,7 @@ public interface Instruction {
 	}
 
 	static void checkParity(int input) {
-		if (input % 2 != 0)
+		if (numOnes(input) % 2 != 0)
 			throw new ParityCheckException("The instruction is corrupted.");
 	}
 

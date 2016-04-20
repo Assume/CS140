@@ -32,6 +32,8 @@ public class Factorial {
 		test.setCode(0xF * 8, 0);
 		int result = 0;
 		while (test.isRunning()) {
+			// System.out.println("0 => " + test.getData(0) + "; 1 => " +
+			// result);
 			if (result != test.getData(1)) {
 				result = test.getData(1);
 				System.out.println("0 => " + test.getData(0) + "; 1 => " + result);
