@@ -8,6 +8,10 @@ public class MachineModel {
 
 	private boolean with_gui = false;
 
+	private Code code = new Code();
+
+	private boolean running = false;
+
 	public MachineModel(boolean with_gui) {
 		this.with_gui = with_gui;
 
@@ -240,19 +244,35 @@ public class MachineModel {
 
 	}
 
+	public MachineModel() {
+		this(false);
+	}
+
+	public void setCode(int op, int arg) {
+		code.setCode(op, arg);
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	public void setRunning(boolean what) {
+		running = what;
+	}
+
 	public void halt() {
 		if (!with_gui)
 			System.exit(0);
-	}
-
-	private class CPU {
-		private int accum;
-		private int pc;
-
+		else
+			running = false;
 	}
 
 	public void setData(int i, int j) {
 		memory.setData(i, j);
+	}
+
+	public int getData(int i) {
+		return memory.getData(i);
 	}
 
 	public Instruction get(int i) {
@@ -273,6 +293,31 @@ public class MachineModel {
 
 	public void setAccum(int i) {
 		cpu.accum = i;
+	}
+
+	public void clear() {
+		memory.clear();
+		code.clear();
+		cpu.accum = 0;
+		cpu.pc = 0;
+	}
+	
+	public void step(){
+		try{
+			int op_part = code.getOpPart(cpu.pc);
+			int arg = code.getArg(cpu.pc);
+			Instruction.checkParity(op_part);
+			INSTRUCTIONS[op_part/8].execute(arg, op_part%8);
+		}catch(Exception e){
+			halt();
+			throw e;
+		}
+	}
+
+	private class CPU {
+		private int accum;
+		private int pc;
+
 	}
 
 }
