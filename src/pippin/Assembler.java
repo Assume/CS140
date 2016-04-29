@@ -68,11 +68,39 @@ public class Assembler {
 				} else
 					input_text.add(line.trim());
 				line_num++;
+				if (ret_val != 0)
+					return ret_val;
 			}
 		} catch (FileNotFoundException e) {
 			error.append("Unable to open the assembled file");
 			ret_val = -1;
 		}
+		List<String> output_code = new ArrayList<String>();
+		if (ret_val != 0)
+			return ret_val;
+
+		for (int i = 0; i < input_text.size() && ret_val == 0; i++) {
+			String[] parts = input_text.get(i).split("\\s+");
+			if (!InstructionMap.opcode.containsKey(parts[0].toUpperCase()))
+				error.append("Error on line " + (i + 1) + ": illegal mnemoic");
+			else if (!parts[0].toUpperCase().equals(parts[0]))
+				error.append("Error on line " + (i + 1) + ": mnemonic must be upper case");
+			else if (noArgument.contains(parts[0]) && parts.length > 1)
+				error.append("Error on line " + (i + 1) + ": this mnemonic cannot take arguments");
+			else if (noArgument.contains(parts[0]) && parts.length == 1) {
+				int opPart = 8 * InstructionMap.opcode.get(parts[0]);
+				opPart += Instruction.numOnes(opPart) % 2;
+				output_code.add(Integer.toString(opPart, 16) + " 0");
+			} else {
+				if (parts.length > 2)
+					error.append("Error on line " + (i + 1) + ": this mnemonic has too many arguments");
+				else if (parts.length == 1)
+					error.append("Error on line " + (i + 1) + ": this mnemonic a missing arguments");
+
+			}
+
+		}
+
 		return ret_val;
 
 	}
