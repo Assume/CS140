@@ -79,7 +79,7 @@ public class MachineModel {
 			}
 		};
 
-		// JUMPZ
+		// JMPZ
 		INSTRUCTIONS[0x4] = (arg, flags) -> {
 			flags = flags & 0x6;
 			if (cpu.accum == 0)

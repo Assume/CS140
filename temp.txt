@@ -1,0 +1,96 @@
+	if (error == null)
+			throw new IllegalArgumentException("Coding error: the error buffer is null");
+
+		ArrayList<String> input_text = new ArrayList<>();
+		int ret_val = 0;
+		try (Scanner inp = new Scanner(input)) {
+			int lineNum = 0;
+			boolean blankLineFound = false;
+			int firstBlankLineNum = 0;
+			while (inp.hasNextLine() && ret_val == 0) {
+				String line = inp.nextLine();
+				lineNum++;
+				if (line.trim().length() == 0) {
+					blankLineFound = true;
+					firstBlankLineNum = lineNum;
+				} else if (blankLineFound) {
+					error.append("Illegal blank line in the source file");
+					ret_val = firstBlankLineNum;
+				} else if (line.charAt(0) == ' ' || line.charAt(0) == '\t') {
+					error.append("Line starts with illegal white space");
+					ret_val = lineNum;
+				} else {
+					input_text.add(line.trim());
+				}
+			}
+			if (ret_val != 0) {
+				return ret_val;
+			}
+		} catch (FileNotFoundException e) {
+			error.append("Unable to open the assembled file");
+			ret_val = -1;
+		}
+
+		ArrayList<String> output_code = new ArrayList<>();
+		if (ret_val == 0)
+			for (int i = 0; i < input_text.size() && ret_val == 0; i++) {
+				String[] parts = input_text.get(i).split("\\s+");
+				if (!InstructionMap.opcode.containsKey(parts[0].toUpperCase()))
+					error.append("Error on line " + (i + 1) + ": illegal mnemonic");
+				else if (parts[0] != parts[0].toUpperCase())
+					error.append("Error on line " + (i + 1) + ": mnemonic must be upper case");
+				else if (noArgument.contains(parts[0])) {
+					if (parts.length > 1) {
+						error.append("Error on line " + (i + 1) + ": this mnemonic cannot take arguments");
+					} else {
+						int opPart = 8 * InstructionMap.opcode.get(parts[0]);
+						opPart += Instruction.numOnes(opPart) % 2;
+						output_code.add(Integer.toString(opPart, 16) + " 0");
+					}
+				} else {
+					if (parts.length > 2)
+						error.append("Error on line " + (i + 1) + ": this mnemonic has too many arguments");
+					else if (parts.length == 1)
+						error.append("Error on line " + (i + 1) + ": this mnemonic is missing arguments");
+					else {
+						int flags = 0;
+						if (parts[1].length() == 2)
+							switch (parts[1].charAt(0)) {
+							case '#':
+								flags = 2;
+								parts[1] = parts[1].substring(1);
+								break;
+							case '@':
+								flags = 4;
+								parts[1] = parts[1].substring(1);
+								break;
+							case '&':
+								flags = 6;
+								parts[1] = parts[1].substring(1);
+								break;
+							}
+
+						try {
+							int arg = Integer.parseInt(parts[1], 16);
+							int opPart = 8 * InstructionMap.opcode.get(parts[0]) + flags;
+							opPart += Instruction.numOnes(opPart) % 2;
+							output_code.add(Integer.toString(opPart, 16) + " " + Integer.toString(arg, 16));
+						} catch (NumberFormatException e) {
+							error.append("Error on line " + (i + 1) + ": argument is not a hex number");
+						}
+					}
+				}
+			}
+
+		if (ret_val == 0)
+			try (PrintWriter outp = new PrintWriter(output)) {
+				for (String str : output_code) {
+					outp.println(str);
+				}
+				outp.close();
+			} catch (FileNotFoundException e) {
+				error.append("Error: Unable to write the assembled program to the output file");
+				ret_val = -1;
+			}
+
+		return ret_val;
