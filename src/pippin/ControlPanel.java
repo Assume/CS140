@@ -34,7 +34,7 @@ public class ControlPanel implements Observer {
 		runButton.addActionListener(e -> machineView.toggleAutoStep());
 		returnPanel.add(runButton);
 		reloadButton.setBackground(Color.WHITE);
-		// reloadButton.addActionListener(e -> machineView.reload());
+		reloadButton.addActionListener(e -> machineView.reload());
 		returnPanel.add(reloadButton);
 		return returnPanel;
 	}

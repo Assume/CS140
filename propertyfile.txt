@@ -1,0 +1,5 @@
+#File locations
+#Thu May 05 17:24:33 EDT 2016
+DataDirectory=/Users/adamberelowitz/Desktop/
+ExecutableDirectory=/Users/adamberelowitz/Desktop/
+SourceDirectory=/Users/adamberelowitz/Desktop/

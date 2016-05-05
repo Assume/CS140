@@ -1,7 +1,6 @@
 package pippin;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Observable;
 import java.util.Observer;
@@ -28,16 +27,16 @@ public class MenuBarBuilder implements Observer {
 		returnMenu.setMnemonic(KeyEvent.VK_F);
 		assemble.setMnemonic(KeyEvent.VK_A);
 		assemble.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
-		// assemble.addActionListener(e -> machineView.assembleFile());
+		assemble.addActionListener(e -> machineView.assembleFile());
 		returnMenu.add(assemble);
 		load.setMnemonic(KeyEvent.VK_L);
 		load.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK));
-		// load.addActionListener(e -> machineView.loadFile());
+		load.addActionListener(e -> machineView.loadCode());
 		returnMenu.add(load);
 		returnMenu.addSeparator(); // puts a line across the menu
 		data.setMnemonic(KeyEvent.VK_L);
 		data.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK));
-		// load.addActionListener(e -> machineView.loadFile());
+		data.addActionListener(e -> machineView.loadData());
 		returnMenu.add(data);
 		returnMenu.addSeparator(); // puts a line across the menu
 		exit.setMnemonic(KeyEvent.VK_E);

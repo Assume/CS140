@@ -58,7 +58,7 @@ public class MachineModel extends Observable {
 				memory.setData(memory.getData(arg), cpu.accum);
 				break;
 			default:
-				throw new IllegalArgumentException();
+				throw new IllegalInstructionException();
 			}
 			cpu.pc++;
 		};

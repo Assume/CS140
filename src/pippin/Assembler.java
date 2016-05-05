@@ -91,24 +91,29 @@ public class Assembler {
 		if (ret_val == 0)
 			for (int i = 0; i < input_text.size() && ret_val == 0; i++) {
 				String[] parts = input_text.get(i).split("\\s+");
-				if (!InstructionMap.opcode.containsKey(parts[0].toUpperCase()))
+				if (!InstructionMap.opcode.containsKey(parts[0].toUpperCase())) {
 					error.append("Error on line " + (i + 1) + ": illegal mnemonic");
-				else if (parts[0] != parts[0].toUpperCase())
+					ret_val = i + 1;
+				} else if (!parts[0].equals(parts[0].toUpperCase())) {
 					error.append("Error on line " + (i + 1) + ": mnemonic must be upper case");
-				else if (noArgument.contains(parts[0])) {
+					ret_val = i + 1;
+				} else if (noArgument.contains(parts[0])) {
 					if (parts.length > 1) {
 						error.append("Error on line " + (i + 1) + ": this mnemonic cannot take arguments");
+						ret_val = i + 1;
 					} else {
 						int op_part = 8 * InstructionMap.opcode.get(parts[0]);
 						op_part += Instruction.numOnes(op_part) % 2;
 						output_code.add(Integer.toString(op_part, 16) + " 0");
 					}
 				} else {
-					if (parts.length > 2)
+					if (parts.length > 2) {
 						error.append("Error on line " + (i + 1) + ": this mnemonic has too many arguments");
-					else if (parts.length == 1)
+						ret_val = i + 1;
+					} else if (parts.length == 1) {
 						error.append("Error on line " + (i + 1) + ": this mnemonic is missing arguments");
-					else {
+						ret_val = i + 1;
+					} else {
 						int flags = 0;
 						if (parts[1].length() == 2)
 							switch (parts[1].charAt(0)) {
@@ -133,6 +138,7 @@ public class Assembler {
 							output_code.add(Integer.toString(op_part, 16) + " " + Integer.toString(arg, 16));
 						} catch (NumberFormatException e) {
 							error.append("Error on line " + (i + 1) + ": argument is not a hex number");
+							ret_val = i + 1;
 						}
 					}
 				}

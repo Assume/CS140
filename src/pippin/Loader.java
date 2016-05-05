@@ -71,4 +71,27 @@ public class Loader {
 
 	}
 
+	public static String load(MachineModel model, File program) {
+		if (model == null || program == null)
+			return null;
+		try (Scanner input = new Scanner(program)) {
+			while (input.hasNextLine()) {
+				String line = input.nextLine();
+				Scanner parser = new Scanner(line);
+				int op = parser.nextInt(16);
+				int arg = parser.nextInt(16);
+				model.setCode(op, arg);
+				parser.close();
+			}
+
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return ("Code array Index " + e.getMessage());
+		} catch (NoSuchElementException e) {
+			return ("NoSuchElementException");
+		} catch (FileNotFoundException e1) {
+			return ("File " + program.getName() + " Not Found");
+		}
+		return "success";
+	}
+
 }

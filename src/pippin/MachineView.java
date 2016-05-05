@@ -3,6 +3,7 @@ package pippin;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
@@ -83,8 +84,29 @@ public class MachineView extends Observable {
 		default_dir = default_dir.substring(0, lastSlash + 1);
 	}
 
-	public void loadPropertiesFile() {
-
+	private void loadPropertiesFile() {
+		try { // load properties file "propertyfile.txt", if it exists
+			properties = new Properties();
+			properties.load(new FileInputStream("propertyfile.txt"));
+			source_dir = properties.getProperty("SourceDirectory");
+			data_dir = properties.getProperty("DataDirectory");
+			executable_dir = properties.getProperty("ExecutableDirectory");
+			// CLEAN UP ANY ERRORS IN WHAT IS STORED:
+			if (source_dir == null || source_dir.length() == 0 || !new File(source_dir).exists()) {
+				source_dir = default_dir;
+			}
+			if (executable_dir == null || executable_dir.length() == 0 || !new File(executable_dir).exists()) {
+				executable_dir = default_dir;
+			}
+			if (data_dir == null || data_dir.length() == 0 || !new File(data_dir).exists()) {
+				data_dir = default_dir;
+			}
+		} catch (Exception e) {
+			// PROPERTIES FILE DID NOT EXIST
+			source_dir = default_dir;
+			executable_dir = default_dir;
+			data_dir = default_dir;
+		}
 	}
 
 	public void createAndShowGUI() {
@@ -94,7 +116,9 @@ public class MachineView extends Observable {
 		memory_view_panel_2 = new MemoryViewPanel(this, 160, 240);
 		memory_view_panel_3 = new MemoryViewPanel(this, 240, Memory.DATA_SIZE);
 		cpu_view_panel = new CPUViewPanel(this);
+		control_panel = new ControlPanel(this);
 		frame.add(code_view_panel.createCodeDisplay(), BorderLayout.LINE_START);
+		menu_bar_builder = new MenuBarBuilder(this);
 		JPanel center = new JPanel();
 		center.setLayout(new GridLayout(1, 3));
 		frame.add(center, BorderLayout.CENTER);
@@ -222,42 +246,42 @@ public class MachineView extends Observable {
 			System.exit(0);
 		}
 	}
-	
-	public void loadFile() {
+
+	public void loadCode() {
+		program_loaded = false;
+		no_data_needed = false;
 		JFileChooser chooser = new JFileChooser(executable_dir);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				"Pippin Executable Files", "pexe");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Pippin Executable Files", "pexe");
 		chooser.setFileFilter(filter);
 		// CODE TO LOAD DESIRED FILE
 		int openOK = chooser.showOpenDialog(null);
-		if(openOK == JFileChooser.APPROVE_OPTION) {
+		if (openOK == JFileChooser.APPROVE_OPTION) {
 			current_program_file = chooser.getSelectedFile();
-		}
-		if(current_program_file != null && current_program_file.exists()) {
+		} else if (openOK == JFileChooser.CANCEL_OPTION)
+			return;
+
+		if (current_program_file != null && current_program_file.exists()) {
 			// CODE TO REMEMBER WHICH DIRECTORY HAS THE pexe FILES
-			executable_dir = current_program_file .getAbsolutePath();
-			executable_dir = executable_dir.replace('\\','/');
+			executable_dir = current_program_file.getAbsolutePath();
+			executable_dir = executable_dir.replace('\\', '/');
 			int lastSlash = executable_dir.lastIndexOf('/');
 			executable_dir = executable_dir.substring(0, lastSlash + 1);
-			try { 
+			try {
 				properties.setProperty("SourceDirectory", source_dir);
 				properties.setProperty("ExecutableDirectory", executable_dir);
 				properties.setProperty("DataDirectory", data_dir);
-				properties.store(new FileOutputStream("propertyfile.txt"), 
-						"File locations");
+				properties.store(new FileOutputStream("propertyfile.txt"), "File locations");
 			} catch (Exception e) {
+				e.printStackTrace();
 				System.out.println("Error writing properties file");
-			}			
+			}
 			program_loaded = true;
-			int needData = JOptionPane.showConfirmDialog(
-					frame, 
-					"Data may be needed before the program can execute\n"
-							+ "Do you need to load data?",
-							"Program Load",
-							JOptionPane.YES_NO_OPTION);
-			if(needData == JOptionPane.NO_OPTION) {
+			int needData = JOptionPane.showConfirmDialog(frame,
+					"Data may be needed before the program can execute\n" + "Do you need to load data?", "Program Load",
+					JOptionPane.YES_NO_OPTION);
+			if (needData == JOptionPane.NO_OPTION) {
 				no_data_needed = true;
-				finalLoad_ReloadStep();			
+				finalLoad_ReloadStep();
 			} else {
 				loadData();
 			}
@@ -265,64 +289,130 @@ public class MachineView extends Observable {
 	}
 
 	public void loadData() {
-		if(!program_loaded) {
-			JOptionPane.showMessageDialog(
-					frame, 
-					"No program loaded. Please load a program",
-					"Error",
+		if (!program_loaded) {
+			JOptionPane.showMessageDialog(frame, "No program loaded. Please load a program", "Error",
 					JOptionPane.OK_OPTION);
 			return;
 		}
 		JFileChooser chooser = new JFileChooser(data_dir);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				"Pippin Data Files", "dat");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Pippin Data Files", "dat");
 		chooser.setFileFilter(filter);
 		// CODE TO LOAD DESIRED FILE
 		int openOK = chooser.showOpenDialog(null);
-		if(openOK == JFileChooser.APPROVE_OPTION) {
+		if (openOK == JFileChooser.APPROVE_OPTION) {
 			current_data_file = chooser.getSelectedFile();
-		}
-		if(current_data_file != null && current_data_file.exists()) {
+		} else if (openOK == JFileChooser.CANCEL_OPTION)
+			return;
+		if (current_data_file != null && current_data_file.exists()) {
 			// CODE TO REMEMBER WHICH DIRECTORY HAS THE dat FILES
-			data_dir = current_data_file .getAbsolutePath();
-			data_dir = data_dir.replace('\\','/');
+			data_dir = current_data_file.getAbsolutePath();
+			data_dir = data_dir.replace('\\', '/');
 			int lastSlash = data_dir.lastIndexOf('/');
 			data_dir = data_dir.substring(0, lastSlash + 1);
-			try { 
+			try {
 				properties.setProperty("SourceDirectory", source_dir);
 				properties.setProperty("ExecutableDirectory", executable_dir);
 				properties.setProperty("DataDirectory", data_dir);
-				properties.store(new FileOutputStream("propertyfile.txt"), 
-						"File locations");
+				properties.store(new FileOutputStream("propertyfile.txt"), "File locations");
 			} catch (Exception e) {
+				e.printStackTrace();
 				System.out.println("Error writing properties file");
-			}			
+			}
 			finalLoad_ReloadStep();
-		} 
-	}		
+		}
+	}
 
 	private void finalLoad_ReloadStep() {
 		clearAll();
 		String str = "";
-		if(no_data_needed)
+		if (no_data_needed)
 			str = Loader.load(model, current_program_file);
 		else
 			str = Loader.load(model, current_program_file, current_data_file);
-		if(str.equals("success")) {
+		if ("success".equals(str)) {
 			model.setRunning(true);
 			setRunning(true);
 			setAutoStepOn(false);
 			setChanged();
 			notifyObservers("Load Code");
+		} else {
+			JOptionPane.showMessageDialog(frame,
+					"The file being selected has problems.\n" + str + "\n" + "Cannot load the program", "Warning",
+					JOptionPane.OK_OPTION);
 		}
-		else {
-			JOptionPane.showMessageDialog(
-					frame, 
-					"The file being selected has problems.\n" +
-							str + "\n" +
-							"Cannot load the program",
-							"Warning",
+	}
+
+	public void reload() {
+		clearAll();
+		finalLoad_ReloadStep();
+	}
+
+	public void assembleFile() {
+		File source = null;
+		File output_exe = null;
+		JFileChooser chooser = new JFileChooser(source_dir);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Pippin Source Files", "pasm");
+		chooser.setFileFilter(filter);
+		// CODE TO LOAD DESIRED FILE
+		int openOK = chooser.showOpenDialog(null);
+		if (openOK == JFileChooser.APPROVE_OPTION) {
+			source = chooser.getSelectedFile();
+		} else if (openOK == JFileChooser.CANCEL_OPTION)
+			return;
+
+		if (source != null && source.exists()) {
+			// CODE TO REMEMBER WHICH DIRECTORY HAS THE pexe FILES
+			// WHICH WE WILL ALLOW TO BE DIFFERENT FROM sourceDir
+			source_dir = source.getAbsolutePath();
+			source_dir = source_dir.replace('\\', '/');
+			int lastDot = source_dir.lastIndexOf('.');
+			String outName = source_dir.substring(0, lastDot + 1) + "pexe";
+			int lastSlash = source_dir.lastIndexOf('/');
+			source_dir = source_dir.substring(0, lastSlash + 1);
+			outName = outName.substring(lastSlash + 1);
+			filter = new FileNameExtensionFilter("Pippin Executable Files", "pexe");
+			if (executable_dir.equals(default_dir)) {
+				chooser = new JFileChooser(source_dir);
+			} else {
+				chooser = new JFileChooser(executable_dir);
+			}
+			chooser.setFileFilter(filter);
+			chooser.setSelectedFile(new File(outName));
+			int saveOK = chooser.showSaveDialog(null);
+			if (saveOK == JFileChooser.APPROVE_OPTION) {
+				output_exe = chooser.getSelectedFile();
+			}
+			if (output_exe != null) {
+				// CODE TO REMEMBER WHICH DIRECTORY HAS THE pexe FILES
+				executable_dir = source.getAbsolutePath();
+				executable_dir = executable_dir.replace('\\', '/');
+				int lastSlash1 = executable_dir.lastIndexOf('/');
+				executable_dir = executable_dir.substring(0, lastSlash1 + 1);
+				try {
+					properties.setProperty("SourceDirectory", source_dir);
+					properties.setProperty("ExecutableDirectory", executable_dir);
+					properties.setProperty("DataDirectory", data_dir);
+					properties.store(new FileOutputStream("propertyfile.txt"), "File locations");
+				} catch (Exception e) {
+					System.out.println("Error writing properties file");
+					e.printStackTrace();
+				}
+				StringBuilder builder = new StringBuilder();
+				int ret = Assembler.assemble(source, output_exe, builder);
+				if (ret == 0)
+					JOptionPane.showMessageDialog(frame, "The source was assembled to an executable", "Success",
+							JOptionPane.INFORMATION_MESSAGE);
+				else
+					JOptionPane.showMessageDialog(frame, builder.toString(), "Failure on line " + ret,
 							JOptionPane.OK_OPTION);
+			} else {
+				JOptionPane.showMessageDialog(frame, "The output file has problems.\n" + "Cannot assemble the program",
+						"Warning", JOptionPane.OK_OPTION);
+			}
+
+		} else {
+			JOptionPane.showMessageDialog(frame, "The source file has problems.\n" + "Cannot assemble the program",
+					"Warning", JOptionPane.OK_OPTION);
 		}
 	}
 

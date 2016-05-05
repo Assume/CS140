@@ -12,7 +12,8 @@ import javax.swing.JTextField;
 public class CPUViewPanel implements Observer {
 
 	private MachineView machine_view;
-	private JTextField acc, pc = new JTextField();
+	private JTextField acc = new JTextField();
+	private JTextField pc = new JTextField();
 
 	public CPUViewPanel(MachineView machine_view) {
 		this.machine_view = machine_view;
@@ -31,7 +32,7 @@ public class CPUViewPanel implements Observer {
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
-		if(machine_view != null) {
+		if (machine_view != null) {
 			acc.setText("" + machine_view.getAccum());
 			pc.setText("" + machine_view.getPC());
 		}
