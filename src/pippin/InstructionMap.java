@@ -7,6 +7,8 @@ public class InstructionMap {
 
 	public static Map<String, Integer> opcode = new TreeMap<String, Integer>();
 
+	public static Map<Integer, String> mnemonics = new TreeMap<Integer, String>();
+
 	static {
 		opcode.put("NOP", 0x0);
 		opcode.put("LOD", 0x1);
@@ -22,7 +24,9 @@ public class InstructionMap {
 		opcode.put("CMPL", 0xB);
 		opcode.put("CMPZ", 0xC);
 		opcode.put("HALT", 0xF);
-		
+		for (String x : opcode.keySet())
+			mnemonics.put(opcode.get(x), x);
+
 	}
 
 }

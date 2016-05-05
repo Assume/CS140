@@ -1,6 +1,8 @@
 package pippin;
 
-public class MachineModel {
+import java.util.Observable;
+
+public class MachineModel extends Observable {
 
 	public final Instruction[] INSTRUCTIONS = new Instruction[0x10];
 	private CPU cpu = new CPU();
@@ -295,27 +297,39 @@ public class MachineModel {
 		cpu.accum = i;
 	}
 
+	public Code getCode() {
+		return code;
+	}
+
+	public int getChangedIndex() {
+		return memory.getChangedIndex();
+	}
+
 	public void clear() {
 		memory.clear();
 		code.clear();
 		cpu.accum = 0;
 		cpu.pc = 0;
 	}
-	
-	public void step(){
-		try{
+
+	public void step() {
+		try {
 			int op_part = code.getOpPart(cpu.pc);
 			int arg = code.getArg(cpu.pc);
-			//System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
+			// System.out.println("Step" + op_part/8 + " " + op_part%8 + " " +
+			// arg);
 			Instruction.checkParity(op_part);
-			//System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
-			INSTRUCTIONS[op_part/8].execute(arg, op_part%8);
-			//System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
-			
-		}catch(Exception e){
-//		halt();
-//			System.out.println("Step" + op_part/8 + " " + op_part%8 + " " + arg);
-			
+			// System.out.println("Step" + op_part/8 + " " + op_part%8 + " " +
+			// arg);
+			INSTRUCTIONS[op_part / 8].execute(arg, op_part % 8);
+			// System.out.println("Step" + op_part/8 + " " + op_part%8 + " " +
+			// arg);
+
+		} catch (Exception e) {
+			// halt();
+			// System.out.println("Step" + op_part/8 + " " + op_part%8 + " " +
+			// arg);
+
 			throw e;
 		}
 	}

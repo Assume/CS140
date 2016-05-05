@@ -65,7 +65,6 @@ public class Assembler {
 			int first_blank_line_num = 0;
 			while (inp.hasNextLine() && ret_val == 0) {
 				String line = inp.nextLine();
-				line_num++;
 				if (line.trim().length() == 0) {
 					blank_line_found = true;
 					first_blank_line_num = line_num;
@@ -77,6 +76,7 @@ public class Assembler {
 					ret_val = line_num;
 				} else
 					input_text.add(line.trim());
+				line_num++;
 
 			}
 			if (ret_val != 0)

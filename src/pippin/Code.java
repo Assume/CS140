@@ -43,4 +43,10 @@ public class Code {
 		nextCodeIndex = 0;
 	}
 
+	public String getText(int i) {
+		if (i >= 0 && i < nextCodeIndex)
+			return InstructionMap.mnemonics.get(getOpPart(i)) + " " + getArg(i);
+		return "";
+	}
+
 }
