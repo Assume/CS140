@@ -26,29 +26,29 @@ public class CodeViewPanel implements Observer {
 	private JTextField[] code_text = new JTextField[Code.CODE_MAX];
 	private int previous_color = -1;
 
-	public CodeViewPanel(MachineView machine_view){
+	public CodeViewPanel(MachineView machine_view) {
 		this.machine_view = machine_view;
 		this.machine_view.addObserver(this);
 	}
-	
+
 	public JComponent createCodeDisplay() {
 		JPanel returnPanel = new JPanel();
 		JPanel panel = new JPanel();
 		JPanel numPanel = new JPanel();
 		JPanel sourcePanel = new JPanel();
-		returnPanel.setPreferredSize(new Dimension(300,150));;
+		returnPanel.setPreferredSize(new Dimension(300, 150));
+		;
 		returnPanel.setLayout(new BorderLayout());
 		panel.setLayout(new BorderLayout());
-		numPanel.setLayout(new GridLayout(0,1));
-		sourcePanel.setLayout(new GridLayout(0,1));
-		for(int i = 0; i < Code.CODE_MAX; i++) {
-			numPanel.add(new JLabel(i+": ", JLabel.RIGHT));
+		numPanel.setLayout(new GridLayout(0, 1));
+		sourcePanel.setLayout(new GridLayout(0, 1));
+		for (int i = 0; i < Code.CODE_MAX; i++) {
+			numPanel.add(new JLabel(i + ": ", JLabel.RIGHT));
 			code_text[i] = new JTextField(10);
 			sourcePanel.add(code_text[i]);
 		}
-		Border border = BorderFactory.createTitledBorder(
-				BorderFactory.createLineBorder(Color.BLACK), "Code Memory View",
-				TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
+		Border border = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK),
+				"Code Memory View", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
 		returnPanel.setBorder(border);
 
 		panel.add(numPanel, BorderLayout.LINE_START);
@@ -57,42 +57,42 @@ public class CodeViewPanel implements Observer {
 		returnPanel.add(scroller);
 		return returnPanel;
 	}
-	
+
 	@Override
 	public void update(Observable arg0, Object arg1) {
-		if(arg1 != null && arg1.equals("Load Code")) {
-			for(int i = 0; i < Code.CODE_MAX; i++) {
+		if (arg1 != null && arg1.equals("Load Code")) {
+			code = machine_view.getCode(); ///// NEW
+			for (int i = 0; i < Code.CODE_MAX; i++) {
 				code_text[i].setText(code.getText(i));
-			}	
-			previous_color = machine_view.getPC();			
+			}
+			previous_color = machine_view.getPC();
 			code_text[previous_color].setBackground(Color.YELLOW);
-		}	
-		if(arg1 != null && arg1.equals("Clear")) {
-			for(int i = 0; i < Code.CODE_MAX; i++) {
+		}
+		if (arg1 != null && arg1.equals("Clear")) {
+			for (int i = 0; i < Code.CODE_MAX; i++) {
 				code_text[i].setText("");
-			}	
-			if(previous_color >= 0 && previous_color < Code.CODE_MAX) {
+			}
+			if (previous_color >= 0 && previous_color < Code.CODE_MAX) {
 				code_text[previous_color].setBackground(Color.WHITE);
 			}
 			previous_color = -1;
-		}		
-		if(this.previous_color >= 0 && previous_color < Code.CODE_MAX) {
+		}
+		if (this.previous_color >= 0 && previous_color < Code.CODE_MAX) {
 			code_text[previous_color].setBackground(Color.WHITE);
 			previous_color = machine_view.getPC();
-			if(this.previous_color >= 0 && previous_color < Code.CODE_MAX) {
+			if (this.previous_color >= 0 && previous_color < Code.CODE_MAX) {
 				code_text[previous_color].setBackground(Color.YELLOW);
 			}
-		} 
+		}
 
-		if(scroller != null && code != null && machine_view!= null) {
-			JScrollBar bar= scroller.getVerticalScrollBar();
+		if (scroller != null && code != null && machine_view != null) {
+			JScrollBar bar = scroller.getVerticalScrollBar();
 			int pc = machine_view.getPC();
-			if(pc < Code.CODE_MAX && code_text[pc] != null) {
+			if (pc < Code.CODE_MAX && code_text[pc] != null) {
 				Rectangle bounds = code_text[pc].getBounds();
-				bar.setValue(Math.max(0, bounds.y - 15*bounds.height));
+				bar.setValue(Math.max(0, bounds.y - 15 * bounds.height));
 			}
 		}
 	}
-	
-	
+
 }

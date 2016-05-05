@@ -3,13 +3,19 @@ package pippin;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.Observable;
 import java.util.Properties;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MachineView extends Observable {
 
@@ -25,7 +31,7 @@ public class MachineView extends Observable {
 
 	private MachineModel model;
 
-	private String default_dir, data_dir, executable_dir;
+	private String default_dir, data_dir, executable_dir, source_dir;
 
 	private Properties properties;
 
@@ -55,8 +61,26 @@ public class MachineView extends Observable {
 		createAndShowGUI();
 	}
 
-	public void locateDefaultDirectory() {
-
+	private void locateDefaultDirectory() {
+		// CODE TO DISCOVER THE ECLIPSE DEFAULT DIRECTORY:
+		File temp = new File("propertyfile.txt");
+		if (!temp.exists()) {
+			PrintWriter out;
+			try {
+				out = new PrintWriter(temp);
+				out.close();
+				default_dir = temp.getAbsolutePath();
+				temp.delete();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		} else {
+			default_dir = temp.getAbsolutePath();
+		}
+		// change to forward slashes
+		default_dir = default_dir.replace('\\', '/');
+		int lastSlash = default_dir.lastIndexOf('/');
+		default_dir = default_dir.substring(0, lastSlash + 1);
 	}
 
 	public void loadPropertiesFile() {
@@ -88,6 +112,95 @@ public class MachineView extends Observable {
 		frame.setVisible(true);
 	}
 
+	public void step() {
+		if (model.isRunning()) {
+			try {
+				model.step();
+			} catch (CodeAccessException e) {
+				halt();
+				JOptionPane.showMessageDialog(frame,
+						"Illegal access to code from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+						"Run time error", JOptionPane.OK_OPTION);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				halt();
+				JOptionPane.showMessageDialog(frame,
+						"Illegal access to data from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+						"Run time error", JOptionPane.OK_OPTION);
+			} catch (NullPointerException e) {
+				halt();
+				JOptionPane.showMessageDialog(frame, "Illegal access to null data from line " + getPC() + "\n"
+						+ "Exception message: " + e.getMessage(), "Run time error", JOptionPane.OK_OPTION);
+			} catch (IllegalInstructionException e) {
+				halt();
+				JOptionPane.showMessageDialog(frame,
+						"Illegal flags from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+						"Run time error", JOptionPane.OK_OPTION);
+			} catch (DivideByZeroException e) {
+				halt();
+				JOptionPane.showMessageDialog(frame,
+						"Divide By Zero from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+						"Run time error", JOptionPane.OK_OPTION);
+			} catch (ParityCheckException e) {
+				halt();
+				JOptionPane.showMessageDialog(frame,
+						"Parity exception from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+						"Run time error", JOptionPane.OK_OPTION);
+			}
+			setChanged();
+			notifyObservers();
+		} else
+			halt();
+	}
+
+	public void execute() {
+		while (running) {
+			if (model.isRunning()) {
+				try {
+					model.step();
+				} catch (CodeAccessException e) {
+					halt();
+					JOptionPane.showMessageDialog(frame, "Illegal access to code from line " + getPC() + "\n"
+							+ "Exception message: " + e.getMessage(), "Run time error", JOptionPane.OK_OPTION);
+				} catch (ArrayIndexOutOfBoundsException e) {
+					halt();
+					JOptionPane.showMessageDialog(frame, "Illegal access to data from line " + getPC() + "\n"
+							+ "Exception message: " + e.getMessage(), "Run time error", JOptionPane.OK_OPTION);
+				} catch (NullPointerException e) {
+					halt();
+					JOptionPane.showMessageDialog(frame, "Illegal access to null data from line " + getPC() + "\n"
+							+ "Exception message: " + e.getMessage(), "Run time error", JOptionPane.OK_OPTION);
+				} catch (IllegalInstructionException e) {
+					halt();
+					JOptionPane.showMessageDialog(frame,
+							"Illegal flags from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+							"Run time error", JOptionPane.OK_OPTION);
+				} catch (DivideByZeroException e) {
+					halt();
+					JOptionPane.showMessageDialog(frame,
+							"Divide By Zero from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+							"Run time error", JOptionPane.OK_OPTION);
+				} catch (ParityCheckException e) {
+					halt();
+					JOptionPane.showMessageDialog(frame,
+							"Parity exception from line " + getPC() + "\n" + "Exception message: " + e.getMessage(),
+							"Run time error", JOptionPane.OK_OPTION);
+				}
+
+			} else
+				halt();
+			setChanged();
+			notifyObservers();
+		}
+	}
+
+	public void toggleAutoStep() {
+		setAutoStepOn(!auto_step_on);
+	}
+
+	public void setAutoStepOn(boolean what) {
+		auto_step_on = what;
+	}
+
 	public void clearAll() {
 		model.clear();
 		program_loaded = false;
@@ -100,6 +213,117 @@ public class MachineView extends Observable {
 
 	public void halt() {
 		setRunning(false);
+	}
+
+	public void exit() { // method executed when user exits the program
+		int decision = JOptionPane.showConfirmDialog(frame, "Do you really wish to exit?", "Confirmation",
+				JOptionPane.YES_NO_OPTION);
+		if (decision == JOptionPane.YES_OPTION) {
+			System.exit(0);
+		}
+	}
+	
+	public void loadFile() {
+		JFileChooser chooser = new JFileChooser(executable_dir);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+				"Pippin Executable Files", "pexe");
+		chooser.setFileFilter(filter);
+		// CODE TO LOAD DESIRED FILE
+		int openOK = chooser.showOpenDialog(null);
+		if(openOK == JFileChooser.APPROVE_OPTION) {
+			current_program_file = chooser.getSelectedFile();
+		}
+		if(current_program_file != null && current_program_file.exists()) {
+			// CODE TO REMEMBER WHICH DIRECTORY HAS THE pexe FILES
+			executable_dir = current_program_file .getAbsolutePath();
+			executable_dir = executable_dir.replace('\\','/');
+			int lastSlash = executable_dir.lastIndexOf('/');
+			executable_dir = executable_dir.substring(0, lastSlash + 1);
+			try { 
+				properties.setProperty("SourceDirectory", source_dir);
+				properties.setProperty("ExecutableDirectory", executable_dir);
+				properties.setProperty("DataDirectory", data_dir);
+				properties.store(new FileOutputStream("propertyfile.txt"), 
+						"File locations");
+			} catch (Exception e) {
+				System.out.println("Error writing properties file");
+			}			
+			program_loaded = true;
+			int needData = JOptionPane.showConfirmDialog(
+					frame, 
+					"Data may be needed before the program can execute\n"
+							+ "Do you need to load data?",
+							"Program Load",
+							JOptionPane.YES_NO_OPTION);
+			if(needData == JOptionPane.NO_OPTION) {
+				no_data_needed = true;
+				finalLoad_ReloadStep();			
+			} else {
+				loadData();
+			}
+		}
+	}
+
+	public void loadData() {
+		if(!program_loaded) {
+			JOptionPane.showMessageDialog(
+					frame, 
+					"No program loaded. Please load a program",
+					"Error",
+					JOptionPane.OK_OPTION);
+			return;
+		}
+		JFileChooser chooser = new JFileChooser(data_dir);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+				"Pippin Data Files", "dat");
+		chooser.setFileFilter(filter);
+		// CODE TO LOAD DESIRED FILE
+		int openOK = chooser.showOpenDialog(null);
+		if(openOK == JFileChooser.APPROVE_OPTION) {
+			current_data_file = chooser.getSelectedFile();
+		}
+		if(current_data_file != null && current_data_file.exists()) {
+			// CODE TO REMEMBER WHICH DIRECTORY HAS THE dat FILES
+			data_dir = current_data_file .getAbsolutePath();
+			data_dir = data_dir.replace('\\','/');
+			int lastSlash = data_dir.lastIndexOf('/');
+			data_dir = data_dir.substring(0, lastSlash + 1);
+			try { 
+				properties.setProperty("SourceDirectory", source_dir);
+				properties.setProperty("ExecutableDirectory", executable_dir);
+				properties.setProperty("DataDirectory", data_dir);
+				properties.store(new FileOutputStream("propertyfile.txt"), 
+						"File locations");
+			} catch (Exception e) {
+				System.out.println("Error writing properties file");
+			}			
+			finalLoad_ReloadStep();
+		} 
+	}		
+
+	private void finalLoad_ReloadStep() {
+		clearAll();
+		String str = "";
+		if(no_data_needed)
+			str = Loader.load(model, current_program_file);
+		else
+			str = Loader.load(model, current_program_file, current_data_file);
+		if(str.equals("success")) {
+			model.setRunning(true);
+			setRunning(true);
+			setAutoStepOn(false);
+			setChanged();
+			notifyObservers("Load Code");
+		}
+		else {
+			JOptionPane.showMessageDialog(
+					frame, 
+					"The file being selected has problems.\n" +
+							str + "\n" +
+							"Cannot load the program",
+							"Warning",
+							JOptionPane.OK_OPTION);
+		}
 	}
 
 	public boolean isAutoStepOn() {

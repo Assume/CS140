@@ -42,9 +42,8 @@ public class MenuBarBuilder implements Observer {
 		returnMenu.addSeparator(); // puts a line across the menu
 		exit.setMnemonic(KeyEvent.VK_E);
 		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
-		// exit.addActionListener(e -> machineView.exit());
+		exit.addActionListener(e -> machineView.exit());
 		returnMenu.add(exit);
-
 		return returnMenu;
 	}
 
@@ -53,7 +52,7 @@ public class MenuBarBuilder implements Observer {
 		menu.setMnemonic(KeyEvent.VK_X);
 		go.setMnemonic(KeyEvent.VK_G);
 		go.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.CTRL_MASK));
-		// go.addActionListener(e -> machineView.execute());
+		go.addActionListener(e -> machineView.execute());
 		menu.add(go);
 		return menu;
 	}

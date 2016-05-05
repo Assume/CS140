@@ -44,9 +44,27 @@ public class Code {
 	}
 
 	public String getText(int i) {
-		if (i >= 0 && i < nextCodeIndex)
-			return InstructionMap.mnemonics.get(getOpPart(i)) + " " + getArg(i);
-		return "";
+		StringBuilder builder = new StringBuilder();
+		if (i < nextCodeIndex) {
+			builder.append(InstructionMap.mnemonics.get(getOpPart(i) / 8));
+			builder.append(' ');
+			int k = getOpPart(i) % 8;
+			switch (k) {
+			case 7:
+			case 6:
+				builder.append("&");
+				break;
+			case 5:
+			case 4:
+				builder.append("@");
+				break;
+			case 3:
+			case 2:
+				builder.append("#");
+			}
+			builder.append(getArg(i));
+		}
+		return builder.toString();
 	}
 
 }

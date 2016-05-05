@@ -25,13 +25,13 @@ public class ControlPanel implements Observer {
 		JPanel returnPanel = new JPanel();
 		returnPanel.setLayout(new GridLayout(1, 0));
 		stepButton.setBackground(Color.WHITE);
-		// stepButton.addActionListener(e -> machineView.step());
+		stepButton.addActionListener(e -> machineView.step());
 		returnPanel.add(stepButton);
 		clearButton.setBackground(Color.WHITE);
 		clearButton.addActionListener(e -> machineView.clearAll());
 		returnPanel.add(clearButton);
 		runButton.setBackground(Color.WHITE);
-		// runButton.addActionListener(e -> machineView.toggleAutoStep());
+		runButton.addActionListener(e -> machineView.toggleAutoStep());
 		returnPanel.add(runButton);
 		reloadButton.setBackground(Color.WHITE);
 		// reloadButton.addActionListener(e -> machineView.reload());
