@@ -24,6 +24,7 @@ public class InstructionMap {
 		opcode.put("CMPL", 0xB);
 		opcode.put("CMPZ", 0xC);
 		opcode.put("HALT", 0xF);
+		opcode.put("FOR", 0xD);
 		for (String x : opcode.keySet())
 			mnemonics.put(opcode.get(x), x);
 

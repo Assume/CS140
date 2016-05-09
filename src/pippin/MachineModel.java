@@ -232,6 +232,19 @@ public class MachineModel extends Observable {
 			cpu.pc++;
 		};
 
+		// FOR
+		INSTRUCTIONS[0xD] = (arg, flags) -> {
+			if (flags == 0) { // direct addressing
+				cpu.accum = cpu.accum != 0 && memory.getData(arg) != 0 ? 1 : 0;
+			} else if (flags == 2) { // immediate addressing
+				cpu.accum = cpu.accum != 0 && arg != 0 ? 1 : 0;
+			} else { // here the illegal case is "11"
+				String fString = "(" + (flags % 8 > 3 ? "1" : "0") + (flags % 4 > 1 ? "1" : "0") + ")";
+				throw new IllegalInstructionException("Illegal flags for this instruction: " + fString);
+			}
+			cpu.pc++;
+		};
+
 		// HALT
 		INSTRUCTIONS[0xF] = (arg, flags) -> {
 			flags = flags & 0x6; // remove parity bit that will have been
