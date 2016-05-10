@@ -115,21 +115,21 @@ public class Assembler {
 						ret_val = i + 1;
 					} else {
 						int flags = 0;
-						if (parts[1].length() == 2)
-							switch (parts[1].charAt(0)) {
-							case '#':
-								flags = 2;
-								parts[1] = parts[1].substring(1);
-								break;
-							case '@':
-								flags = 4;
-								parts[1] = parts[1].substring(1);
-								break;
-							case '&':
-								flags = 6;
-								parts[1] = parts[1].substring(1);
-								break;
-							}
+
+						switch (parts[1].charAt(0)) {
+						case '#':
+							flags = 2;
+							parts[1] = parts[1].substring(1);
+							break;
+						case '@':
+							flags = 4;
+							parts[1] = parts[1].substring(1);
+							break;
+						case '&':
+							flags = 6;
+							parts[1] = parts[1].substring(1);
+							break;
+						}
 
 						try {
 							int arg = Integer.parseInt(parts[1], 16);

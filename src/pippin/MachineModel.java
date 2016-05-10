@@ -234,15 +234,31 @@ public class MachineModel extends Observable {
 
 		// FOR
 		INSTRUCTIONS[0xD] = (arg, flags) -> {
+			flags = flags & 0x6;
 			if (flags == 0) { // direct addressing
-				cpu.accum = cpu.accum != 0 && memory.getData(arg) != 0 ? 1 : 0;
+				int n = memory.getData(arg);
+				int orig_pc = cpu.pc;
+				for (int i = 0; i < (n % 0x1000); i++) {
+					cpu.pc = orig_pc + 1;
+					for (int j = 0; j < (n / 0x1000); j++) {
+						step();
+					}
+				}
+				cpu.pc = orig_pc + (n / 0x1000) + 1;
 			} else if (flags == 2) { // immediate addressing
-				cpu.accum = cpu.accum != 0 && arg != 0 ? 1 : 0;
+				int n = arg;
+				int orig_pc = cpu.pc;
+				for (int i = 0; i < (n % 0x1000); i++) {
+					cpu.pc = orig_pc + 1;
+					for (int j = 0; j < (n / 0x1000); j++) {
+						step();
+					}
+				}
+				cpu.pc = orig_pc + (n / 0x1000) + 1;
 			} else { // here the illegal case is "11"
 				String fString = "(" + (flags % 8 > 3 ? "1" : "0") + (flags % 4 > 1 ? "1" : "0") + ")";
 				throw new IllegalInstructionException("Illegal flags for this instruction: " + fString);
 			}
-			cpu.pc++;
 		};
 
 		// HALT
