@@ -330,6 +330,10 @@ public class MachineModel extends Observable {
 		return code;
 	}
 
+	public void setPC(int pc) {
+		this.cpu.pc = pc;
+	}
+
 	public int getChangedIndex() {
 		return memory.getChangedIndex();
 	}

@@ -1,5 +1,5 @@
 #File locations
-#Tue May 10 12:20:37 EDT 2016
-DataDirectory=/Users/adamberelowitz/Documents/workspace/CS140/
-ExecutableDirectory=/Users/adamberelowitz/Documents/workspace/CS140/
-SourceDirectory=/Users/adamberelowitz/Documents/workspace/CS140/
+#Wed May 11 13:17:58 EDT 2016
+DataDirectory=C\:/Users/Adam/Google Drive/Coding/CS140 test/
+ExecutableDirectory=C\:/Users/Adam/Google Drive/Coding/CS140 test/
+SourceDirectory=C\:/Users/Adam/Google Drive/Coding/CS140 test/
