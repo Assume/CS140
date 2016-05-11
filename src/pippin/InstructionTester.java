@@ -903,7 +903,7 @@ public class InstructionTester {
 	}
 
 	@Test
-	public void testFORDirect() {
+	public void testFORImmediate() {
 		Instruction instruction = machine.get(0xD);
 		machine.setAccum(3);
 		machine.setPC(1);
@@ -927,9 +927,9 @@ public class InstructionTester {
 		assertArrayEquals(dataCopy, machine.getData());
 		assertEquals(5, machine.getPC());
 	}
-	
+
 	@Test
-	public void testFORIndirect() {
+	public void testFORDirect() {
 		Instruction instruction = machine.get(0xD);
 		machine.setAccum(3);
 		machine.setPC(1);
@@ -949,7 +949,7 @@ public class InstructionTester {
 		dataCopy[5] = 6;
 		dataCopy[6] = 7;
 		dataCopy[7] = 8;
-		instruction.execute(0x3005, 0);
+		instruction.execute(0, 0);
 		assertArrayEquals(dataCopy, machine.getData());
 		assertEquals(5, machine.getPC());
 	}
